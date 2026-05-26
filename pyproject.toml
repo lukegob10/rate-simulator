@@ -1,0 +1,13 @@
+[project]
+name = "stochastic-fedfunds"
+version = "0.1.0"
+description = "Transparent stochastic Fed Funds path simulator from local OIS and SOFR normal vol data."
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
