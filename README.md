@@ -60,10 +60,15 @@ python -m stochastic_fedfunds `
   --horizon-months 60 `
   --num-paths 500 `
   --mean-reversion 0.10 `
+  --initial-rate-shock-bps 400 `
   --random-seed 20251231 `
   --vol-aggregation mean_by_option_expiry `
   --short-rate-vol-multiplier 1.0
 ```
+
+`--initial-rate-shock-bps` applies an instantaneous parallel shock to the
+short-rate deviation at the valuation date. For example, `400` means paths
+start from a +4.00% shock and then mean-revert around the OIS forward curve.
 
 Run tests:
 

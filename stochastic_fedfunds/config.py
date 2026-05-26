@@ -16,6 +16,11 @@ class SimulationConfig:
     # Annual mean reversion speed in the centered Hull-White/OU deviation.
     mean_reversion: float = 0.10
 
+    # Instantaneous parallel rate shock applied at valuation time, in basis
+    # points. A positive shock starts paths above the OIS forward centerline
+    # and then mean-reverts through the stochastic deviation process.
+    initial_rate_shock_bps: float = 0.0
+
     # Curve construction approximation. OIS par quotes are treated as
     # zero-equivalent continuous rates, then linearly interpolated.
     curve_method: str = "linear_zero_rate"
@@ -39,6 +44,7 @@ class SimulationConfig:
             **self.to_dict(),
             "model": "one-factor centered Hull-White style short-rate model",
             "model_equation": (
+                "x[0] = initial_rate_shock_bps / 10000; "
                 "x[t+1] = exp(-a*dt) * x[t] + sigma[t] * "
                 "sqrt((1 - exp(-2*a*dt)) / (2*a)) * Z[t]; "
                 "r[t+1] = OIS_forward[t+1] + x[t+1]"
@@ -56,5 +62,11 @@ class SimulationConfig:
             "normal_rate_note": (
                 "The default normal model does not floor rates. Set "
                 "rate_floor to impose one."
+            ),
+            "shock_note": (
+                "initial_rate_shock_bps is an instantaneous parallel shift "
+                "to the short-rate deviation at valuation time. It affects "
+                "the first simulated month after one monthly mean-reversion "
+                "step and then decays through the OU process."
             ),
         }

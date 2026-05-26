@@ -80,6 +80,7 @@ def validation_summary(result: SimulationResult) -> pd.DataFrame:
         ("num_paths", result.config.num_paths),
         ("random_seed", result.config.random_seed),
         ("mean_reversion", result.config.mean_reversion),
+        ("initial_rate_shock_bps", result.config.initial_rate_shock_bps),
         ("vol_aggregation", result.config.vol_aggregation),
         ("short_rate_vol_multiplier", result.config.short_rate_vol_multiplier),
         ("mean_abs_error_mean_vs_forward_bp", float(np.mean(np.abs(means - forward)) * 10000.0)),

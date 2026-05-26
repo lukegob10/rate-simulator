@@ -41,3 +41,27 @@ def test_simulation_shape_and_centering():
     assert result.deviations.shape == result.paths.shape
     assert result.shocks.shape == result.paths.shape
     assert np.mean(np.abs(result.paths.mean(axis=0) - forward.forward_rates)) < 0.0015
+
+
+def test_initial_rate_shock_is_applied_as_mean_reverting_deviation():
+    base_config = SimulationConfig(horizon_months=6, num_paths=2000, random_seed=11)
+    shocked_config = SimulationConfig(
+        horizon_months=6,
+        num_paths=2000,
+        random_seed=11,
+        initial_rate_shock_bps=400.0,
+    )
+    ois = load_ois_curve(ROOT / "data" / "20251231-fedfunds-ois.csv", valuation_date=base_config.valuation_date)
+    vols = load_normal_vol_cube(ROOT / "data" / "20251231-vol-dataset.csv", valuation_date=base_config.valuation_date)
+    forward = build_monthly_forward_curve(ois, base_config.horizon_months)
+    vol = build_monthly_volatility(vols, base_config.horizon_months, forward.dates)
+
+    base = simulate_centered_hull_white(forward, vol, base_config)
+    shocked = simulate_centered_hull_white(forward, vol, shocked_config)
+
+    monthly_decay = np.exp(-shocked_config.mean_reversion / 12.0)
+    expected_path_shift = 0.04 * monthly_decay ** np.arange(1, shocked_config.horizon_months + 1)
+    actual_path_shift = shocked.paths - base.paths
+
+    assert np.allclose(actual_path_shift.mean(axis=0), expected_path_shift)
+    assert np.allclose(actual_path_shift.std(axis=0), 0.0)

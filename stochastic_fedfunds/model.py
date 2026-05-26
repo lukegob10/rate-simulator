@@ -78,7 +78,8 @@ def simulate_centered_hull_white(
     paths = np.zeros((config.num_paths, horizon), dtype=float)
     deviations = np.zeros_like(paths)
     shocks = np.zeros_like(paths)
-    previous_deviation = np.zeros(config.num_paths, dtype=float)
+    initial_deviation = config.initial_rate_shock_bps / 10000.0
+    previous_deviation = np.full(config.num_paths, initial_deviation, dtype=float)
 
     for month_index in range(horizon):
         z = rng.standard_normal(config.num_paths)
