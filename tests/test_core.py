@@ -43,6 +43,40 @@ def test_simulation_shape_and_centering():
     assert np.mean(np.abs(result.paths.mean(axis=0) - forward.forward_rates)) < 0.0015
 
 
+def test_parallel_curve_shock_rebuilds_forward_centerline():
+    ois = load_ois_curve(ROOT / "data" / "20251231-fedfunds-ois.csv", valuation_date="2025-12-31")
+    base_forward = build_monthly_forward_curve(ois, horizon_months=12)
+    shocked_forward = build_monthly_forward_curve(ois, horizon_months=12, parallel_shift_bps=400.0)
+
+    assert np.allclose(shocked_forward.zero_rates_end - base_forward.zero_rates_end, 0.04)
+    assert np.allclose(shocked_forward.forward_rates - base_forward.forward_rates, 0.04)
+
+
+def test_curve_shock_shifts_paths_without_changing_random_deviations():
+    base_config = SimulationConfig(horizon_months=6, num_paths=2000, random_seed=13)
+    shocked_config = SimulationConfig(
+        horizon_months=6,
+        num_paths=2000,
+        random_seed=13,
+        curve_shock_bps=400.0,
+    )
+    ois = load_ois_curve(ROOT / "data" / "20251231-fedfunds-ois.csv", valuation_date=base_config.valuation_date)
+    vols = load_normal_vol_cube(ROOT / "data" / "20251231-vol-dataset.csv", valuation_date=base_config.valuation_date)
+    base_forward = build_monthly_forward_curve(ois, base_config.horizon_months)
+    shocked_forward = build_monthly_forward_curve(
+        ois,
+        shocked_config.horizon_months,
+        parallel_shift_bps=shocked_config.curve_shock_bps,
+    )
+    vol = build_monthly_volatility(vols, base_config.horizon_months, base_forward.dates)
+
+    base = simulate_centered_hull_white(base_forward, vol, base_config)
+    shocked = simulate_centered_hull_white(shocked_forward, vol, shocked_config)
+
+    assert np.allclose(shocked.deviations, base.deviations)
+    assert np.allclose(shocked.paths - base.paths, 0.04)
+
+
 def test_initial_rate_shock_is_applied_as_mean_reverting_deviation():
     base_config = SimulationConfig(horizon_months=6, num_paths=2000, random_seed=11)
     shocked_config = SimulationConfig(

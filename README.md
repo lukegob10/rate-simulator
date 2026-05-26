@@ -60,15 +60,20 @@ python -m stochastic_fedfunds `
   --horizon-months 60 `
   --num-paths 500 `
   --mean-reversion 0.10 `
-  --initial-rate-shock-bps 400 `
+  --curve-shock-bps 400 `
   --random-seed 20251231 `
   --vol-aggregation mean_by_option_expiry `
   --short-rate-vol-multiplier 1.0
 ```
 
-`--initial-rate-shock-bps` applies an instantaneous parallel shock to the
-short-rate deviation at the valuation date. For example, `400` means paths
-start from a +4.00% shock and then mean-revert around the OIS forward curve.
+`--curve-shock-bps` is the recommended market scenario control. It shocks the
+Fed Funds OIS curve first, rebuilds discount factors and monthly forwards, then
+simulates stochastic paths around that shocked centerline. For example, `400`
+means a +4.00% parallel OIS curve shock.
+
+`--initial-rate-shock-bps` is also available for a different use case: a
+transient short-rate impulse at the valuation date. That shock is applied to the
+short-rate deviation state and then mean-reverts through the OU process.
 
 Run tests:
 

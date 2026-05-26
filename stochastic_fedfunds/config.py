@@ -16,9 +16,12 @@ class SimulationConfig:
     # Annual mean reversion speed in the centered Hull-White/OU deviation.
     mean_reversion: float = 0.10
 
-    # Instantaneous parallel rate shock applied at valuation time, in basis
-    # points. A positive shock starts paths above the OIS forward centerline
-    # and then mean-reverts through the stochastic deviation process.
+    # Parallel shock applied to the Fed Funds OIS curve before monthly
+    # forwards are built. This is the recommended market scenario control.
+    curve_shock_bps: float = 0.0
+
+    # Instantaneous short-rate impulse applied at valuation time, in basis
+    # points. This is separate from a market curve scenario.
     initial_rate_shock_bps: float = 0.0
 
     # Curve construction approximation. OIS par quotes are treated as
@@ -52,7 +55,9 @@ class SimulationConfig:
             "curve_assumption": (
                 "Fed Funds OIS par quotes are used as zero-equivalent "
                 "continuously compounded rates for transparent monthly "
-                "forward extraction."
+                "forward extraction. curve_shock_bps, when nonzero, is "
+                "applied as a parallel zero-rate shift before discount "
+                "factors and monthly forwards are rebuilt."
             ),
             "vol_assumption": (
                 "USD SOFR ATM normal swaption vols are used as a proxy for "
@@ -64,9 +69,8 @@ class SimulationConfig:
                 "rate_floor to impose one."
             ),
             "shock_note": (
-                "initial_rate_shock_bps is an instantaneous parallel shift "
-                "to the short-rate deviation at valuation time. It affects "
-                "the first simulated month after one monthly mean-reversion "
-                "step and then decays through the OU process."
+                "Use curve_shock_bps for market-like rate scenarios. Use "
+                "initial_rate_shock_bps only for a transient front-end "
+                "short-rate impulse that decays through the OU process."
             ),
         }

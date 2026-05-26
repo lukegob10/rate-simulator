@@ -40,6 +40,7 @@ def build_monthly_forward_curve(
     ois_curve: OISCurveData,
     horizon_months: int,
     method: str = "linear_zero_rate",
+    parallel_shift_bps: float = 0.0,
 ) -> MonthlyForwardCurve:
     """Convert OIS curve quotes into monthly one-month forward rates."""
 
@@ -48,6 +49,7 @@ def build_monthly_forward_curve(
 
     tenors = ois_curve.quotes["tenor_years"].to_numpy(dtype=float)
     zero_rates = ois_curve.quotes["par_rate"].to_numpy(dtype=float)
+    zero_rates = zero_rates + parallel_shift_bps / 10000.0
 
     boundaries = np.arange(horizon_months + 1, dtype=float) / 12.0
     boundary_zero_rates = np.interp(

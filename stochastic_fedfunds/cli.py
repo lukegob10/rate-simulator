@@ -24,11 +24,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--random-seed", type=int, default=20251231)
     parser.add_argument("--mean-reversion", type=float, default=0.10)
     parser.add_argument(
+        "--curve-shock-bps",
+        type=float,
+        default=0.0,
+        help=(
+            "Parallel shock in basis points applied to the OIS curve before "
+            "monthly forwards are rebuilt. Recommended for market scenarios."
+        ),
+    )
+    parser.add_argument(
         "--initial-rate-shock-bps",
         type=float,
         default=0.0,
         help=(
-            "Instantaneous parallel rate shock in basis points applied at "
+            "Transient short-rate impulse in basis points applied at "
             "valuation time before monthly mean reversion."
         ),
     )
@@ -59,6 +68,7 @@ def run(config: SimulationConfig, ois_file: str | Path, vol_file: str | Path, ou
         ois_curve,
         horizon_months=config.horizon_months,
         method=config.curve_method,
+        parallel_shift_bps=config.curve_shock_bps,
     )
     monthly_volatility = build_monthly_volatility(
         vol_cube,
@@ -81,6 +91,7 @@ def main(argv: list[str] | None = None) -> int:
         num_paths=args.num_paths,
         random_seed=args.random_seed,
         mean_reversion=args.mean_reversion,
+        curve_shock_bps=args.curve_shock_bps,
         initial_rate_shock_bps=args.initial_rate_shock_bps,
         curve_method=args.curve_method,
         tenor_day_count_basis=args.tenor_day_count_basis,
